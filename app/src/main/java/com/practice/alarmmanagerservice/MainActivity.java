@@ -66,21 +66,26 @@ public class MainActivity extends AppCompatActivity {
         PackageManager pm = this.getPackageManager();
         ComponentName receiver = new ComponentName(this,MyBroadCastReceiver.class);
 
+
         Intent alarmIntent = new Intent(this,AlarmReceiver.class);
+//        alarmIntent.setClass(getApplicationContext(), AlarmReceiver.class);
 //        alarmIntent.putExtra("instagramTime",totalTimeUsageByInstagram);
 //        alarmIntent.putExtra("netflixTime",totalTimeUsageByNetflix);
-
+        alarmIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this,0,alarmIntent,0);
         AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
         if(dailyNotify){
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
-            calendar.set(Calendar.HOUR_OF_DAY,16);
-            calendar.set(Calendar.MINUTE,19);
-            calendar.set(Calendar.SECOND,20);
+            calendar.set(Calendar.HOUR_OF_DAY,22);
+            calendar.set(Calendar.MINUTE,51);
+            calendar.set(Calendar.SECOND,30);
 
             if(calendar.before(Calendar.getInstance())) {
+                System.out.println("FIX TIME ");
+                mNetworkReceiver = new AlarmReceiver();
+                registerNetworkBroadcastForNougat();
                 calendar.add(Calendar.DATE,1);
             }
 
@@ -89,11 +94,15 @@ public class MainActivity extends AppCompatActivity {
                         calendar.getTimeInMillis(),
                         AlarmManager.INTERVAL_DAY,pendingIntent);
 
-//                mNetworkReceiver = new AlarmReceiver();
-                registerNetworkBroadcastForNougat();
+//
+
+
                 usageRead();
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+
                     manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,calendar.getTimeInMillis(),pendingIntent);
+                }else{
+                    manager.setExact(AlarmManager.RTC_WAKEUP,calendar.getTimeInMillis(),pendingIntent);
                 }
             }
 
@@ -122,6 +131,12 @@ public class MainActivity extends AppCompatActivity {
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 
     @Override
